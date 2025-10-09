@@ -4,54 +4,23 @@ Created on Mon Oct  6 13:40:51 2025
 
 @author: Robotics
 """
+#%% import libraries
 
 import pandas as pd 
 import numpy as np 
 from matplotlib import pyplot as plt 
 import ast
 import cv2 as cv
+import os
+from pathlib import Path
+from tqdm import tqdm
+from scipy import stats
+
+from utils import *
+from vegetation_indices import *
 
 
-def prepare_data (data):
-    #Ingresa el pd.series y lo regresa como array para entrenar el modelo o 
-    #para evaluar
-    #los arrays se guardan como 
-    
-    
-    x_data = data['Reflectance']
-    y_data = data['FMC']
-
-    
-    x_data = x_data.to_numpy()
-    np_data = [ast.literal_eval(s) for s in x_data]
-    np_data = np.array(np_data)
-    x = np_data.reshape(np_data.shape[0], np_data.shape[1])
-    y = y_data.to_numpy()/100.0
-    return x, y
-
-def get_maximum_size(dir_imgs):
-    
-    max_x = 0
-    max_y = 0
-    max_x_path = ''
-    max_y_path = ''    
-    
-    for path in dir_imgs:
-        img = cv.imread(path, -1)
-        x,y = img.shape
-        
-        if x > max_x:
-            max_x = x
-            max_x_path = path
-            
-            
-        if y > max_y:
-            max_y = y 
-            max_y_path = path
-            
-    return max_x, max_y, max_x_path, max_y_path
-
-#%%
+#%% Get maximum size for the padding
 
 df = pd.read_csv('Dataset_with_images.csv')
 
@@ -66,44 +35,9 @@ total_images = pd.concat([blue_images, green_images,
 
 total_images = total_images.tolist()
 
-#max_x, max_y, max_x_path, max_y_path = get_maximum_size(total_images)
+max_x, max_y, max_x_path, max_y_path = get_maximum_size(total_images)
 
-#%%
-
-def add_padding (max_x, max_y, img):
-    
-    x, y = img.shape
-    
-    dif_x = max_x - x
-    dif_y = max_y - y 
-    
-    if (dif_x % 2) == 0:
-        pad_left = int(dif_x/2)
-        pad_right = int(dif_x/2)
-        
-    else:
-        pad_left = int(np.floor(dif_x/2))
-        pad_right = int(np.floor(dif_x/2)+1)
-        
-    if (dif_y % 2) == 0:
-        pad_down = int(dif_y/2)
-        pad_up = int(dif_y/2)
-        
-    else:
-        pad_down = int(np.floor(dif_y/2))
-        pad_up = int(np.floor(dif_y/2)+1)
-        
-    padd_left = np.zeros([pad_left, y])
-    padd_right = np.zeros([pad_right, y])
-    
-    img_padded_x = np.concatenate([padd_left, img, padd_right])
-    
-    padd_up = np.zeros([img_padded_x.shape[0], pad_up])
-    padd_down = np.zeros([img_padded_x.shape[0], pad_down])
-    
-    img_padded = np.concatenate([padd_up, img_padded_x, padd_down], axis=1)
-    
-    return img_padded
+#%% Testing the padding of the images
 
 img0 = cv.imread(max_x_path,-1)
 img1 = cv.imread(max_y_path,-1)
@@ -130,171 +64,7 @@ ax[0,2].set_axis_off()
 ax[1,2].imshow(img2)
 ax[1,2].set_axis_off()
 
-
-#%%
-
-def safe_divide(numerator, denominator):
-    """Divide arrays safely: returns NaN when denominator is zero or invalid."""
-    with np.errstate(divide='ignore', invalid='ignore'):
-        result = np.divide(numerator, denominator)
-        result[~np.isfinite(result)] = 0 # replace inf and -inf with nan
-    return result
-
-def ndvi(b,g,r,nir,re):
-    return safe_divide(nir - r, nir + r)
-
-def gndvi(b,g,r,nir,re):
-    return safe_divide(nir - g, nir + g)
-
-def ndre(b,g,r,nir,re):
-    return safe_divide(nir - re, nir + re)
-
-def sipi(b,g,r,nir,re):
-    return safe_divide(nir - b, nir + b)
-
-def ngbdi(b,g,r,nir,re):
-    return safe_divide(g - b, g + b)
-
-def ngrdi(b,g,r,nir,re):
-    return safe_divide(g - r, g + r)
-
-def grdi(b,g,r,nir,re):
-    return g - r
-
-def nbgvi(b,g,r,nir,re):
-    return safe_divide(b - g, b + g)
-
-def negi(b,g,r,nir,re):
-    return safe_divide(2*g - r - b, 2*g + r + b)
-
-def mgrvi(b,g,r,nir,re):
-    return safe_divide(g**2 - r**2, g**2 + r**2)
-
-def mvari(b,g,r,nir,re):
-    return safe_divide(g - b, g + r - b)
-
-def rgbvi(b,g,r,nir,re):
-    return safe_divide(g**2 - b*r, g**2 + b*r)
-
-def tgi(b,g,r,nir,re):
-    return g - 0.39*r - 0.61*b
-
-def vari(b,g,r,nir,re):
-    return safe_divide(g - r, g + r - b)
-
-def grri(b,g,r,nir,re):
-    return safe_divide(g, r)
-
-def nri(b,g,r,nir,re):
-    return safe_divide(r, r + g + b)    
-
-def grvi(b,g,r,nir,re):
-    return safe_divide(g - r, g + r - b)
-
-def sr(b,g,r,nir,re):
-    return safe_divide(nir, r)
-
-def savi(b,g,r,nir,re):
-    return safe_divide(1.5*(nir - r), nir + r + 0.5)
-
-def cl(b,g,r,nir,re):
-    return safe_divide(nir, re) - 1
-
-def psri(b,g,r,nir,re):
-    return safe_divide(r - g, re)
-
-def m3cl(b,g,r,nir,re):
-    return safe_divide(nir + r + re, nir - r + re)
-
-def si(b,g,r,nir,re):
-    return (r + g + b)/3
-
-def msr(b,g,r,nir,re):
-    return safe_divide(safe_divide(nir, r) - 1, safe_divide(nir, r) + 1)
-
-def osavi(b,g,r,nir,re):
-    return safe_divide(1.16*(nir - r), nir + r + 0.16)
-
-def rvi(b,g,r,nir,re):
-    return safe_divide(nir, r)
-
-def rvi2(b,g,r,nir,re):
-    return safe_divide(nir, g)
-
-def tvi(b,g,r,nir,re):
-    return 60*(nir - g) - 100*(g - r)
-
-def evi(b,g,r,nir,re):
-    return safe_divide(2.5*(nir - r), nir + 6*r - 7.5*b + 1)
-
-def gi(b,g,r,nir,re):
-    return safe_divide(g, r)
-
-def tcari(b,g,r,nir,re):
-    return 3*((re - r) - 0.2*(re - g)*safe_divide(re, r))
-
-def srpi(b,g,r,nir,re):
-    return safe_divide(b, r)
-
-def npci(b,g,r,nir,re):
-    return safe_divide(r - b, r + b)
-
-def ndvigb(b,g,r,nir,re):
-    return safe_divide(g - b, g + b)
-
-def psri2(b,g,r,nir,re):
-    return safe_divide(b - r, g)
-
-def cive(b,g,r,nir,re):
-    return 0.44*r - 0.81*g + 0.39*b + 18.79
-
-def nirv(b,g,r,nir,re):
-    return nir * ndvi(b,g,r,nir,re)
-
-def dvi(b,g,r,nir,re):
-    return nir - r
-
-def msavi(b,g,r,nir,re):
-    return safe_divide((2*nir + 1) - np.sqrt((2*nir + 1)**2 - 8*(nir - r)), 2)
-
-def cari(b,g,r,nir,re):
-    return re - r - 0.2*(re - g)
-
-def remsr(b,g,r,nir,re):
-    return safe_divide(safe_divide(nir, re) - 1, safe_divide(np.sqrt(nir), re) + 1)
-
-def rendvi(b,g,r,nir,re):
-    return safe_divide(nir - re, nir + re)
-
-def lci(b,g,r,nir,re):
-    return safe_divide(nir - re, nir + r)
-
-#%%
-from scipy import stats
-
-def get_descriptors(img):
-    #img = np.asanyarray(img)
-    
-    img = img/(2**16-1)
-    nonzero_mask = img != 0
-    count = nonzero_mask.sum()
-    
-    if count == 0:
-        return 0,0,0
-    
-    total = img[nonzero_mask].sum()
-    median = np.median(img[nonzero_mask])
-    mode = stats.mode(img[nonzero_mask],keepdims=False).mode
-    return total/count, median, mode
-
-
-
-#%%
-
-import os
-from pathlib import Path
-from tqdm import tqdm
-
+#%% Compute the vegetation indices and get the descriptors
 
 vis = [ndvi, gndvi, ndre, sipi, ngbdi,
        ngrdi, grdi, nbgvi, negi, mgrvi,
@@ -404,6 +174,7 @@ for index, row in tqdm(df.iterrows(), total=len(df), desc = 'Total progress:'):
         #### uncomment to save the vi_images in the folders
         
         #np.savetxt(img_vi_path, vi_img, delimiter=',')
+        
 
         ####
         ####
@@ -415,12 +186,17 @@ for index, row in tqdm(df.iterrows(), total=len(df), desc = 'Total progress:'):
         
         
         
+        
     average.append(average_dict)
     median.append(median_dict)
     mode.append(mode_dict)
     vi_directory.append(vi_directory_dict)
     
-#%%
+    
+    
+    
+    
+#%% Concatenate the dataframes
 
 df2 = pd.DataFrame(average)
 df3 = pd.DataFrame(median)
@@ -428,7 +204,7 @@ df4 = pd.DataFrame(mode)
 
 df_with_vis_descriptors = pd.concat([df,df2,df3,df4], axis = 1)
 
-#%%
+#%% Save to a dataframe
 
 df_with_vis_descriptors.to_csv('Data_with_descriptors.csv', index = False)
     
