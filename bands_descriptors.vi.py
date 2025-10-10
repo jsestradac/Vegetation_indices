@@ -57,11 +57,18 @@ for path_b, path_g, path_r, path_nir, path_re in zip(blue_images, green_images,
     img_nir = cv.imread(path_nir, -1)
     img_re = cv.imread(path_re, -1)
     
-    img_b = img_b
-    img_g = cv.imread(path_g, -1)
-    img_r = cv.imread(path_r, -1)
-    img_nir = cv.imread(path_nir, -1)
-    img_re = cv.imread(path_re, -1)
+    img_b = img_b / (2**16-1)
+    img_g = img_g / (2**16-1)
+    img_r = img_r / (2**16-1)
+    img_nir = img_nir / (2**16-1)
+    img_re = img_re / (2**16-1)
+    
+    img_b = add_padding(img_b)
+    img_g = add_padding(img_g)
+    img_r = add_padding(img_r)
+    img_nir = add_padding(img_nir)
+    img_re = add_padding(img_re)
+    
     
     b_mean, b_med, b_mode = get_descriptors(img_b)
     g_mean, g_med, g_mode = get_descriptors(img_g)
@@ -79,11 +86,35 @@ for path_b, path_g, path_r, path_nir, path_re in zip(blue_images, green_images,
     g_med_list.append(g_med)
     r_med_list.append(r_med)
     nir_med_list.append(nir_med)
-    re_med_list.re_med(re_med)
+    re_med_list.append(re_med)
 
     b_mode_list.append(b_mode)
     g_mode_list.append(g_mode)
     r_mode_list.append(r_mode)
     nir_mode_list.append(nir_mode)
     re_mode_list.append(re_mode)
+#%%   
+new_features = {'b_mean': b_mean_list,
+                'g_mean': g_mean_list,
+                'r_mean': r_mean_list,
+                'nir_mean': nir_mean_list,
+                're_mean': re_mean_list,
+                'b_med': b_med_list,
+                'g_med': g_med_list,
+                'r_med': r_med_list,
+                'nir_med': nir_med_list,
+                're_med': re_med_list,
+                'b_mode': b_mode_list,
+                'g_mode': g_mode_list,
+                'r_mode': r_mode_list,
+                'nir_mode': nir_mode_list,
+                're_mode': re_mode_list}
+
+df = pd.DataFrame(new_features)
+new_dataset = pd.concat([data, df], axis = 1)
+new_dataset.to_csv('Data_with_vi_and_band_descriptors.csv', index = False)
+    
+#%%
+final_data = pd.read_csv('Data_with_vi_and_band_descriptors.csv')
+    
     
