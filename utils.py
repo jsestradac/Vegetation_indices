@@ -66,7 +66,7 @@ def get_maximum_size(dir_imgs):
             
     return max_x, max_y, max_x_path, max_y_path
 
-def add_padding (max_x, max_y, img):
+def add_padding (img, max_x=731, max_y=888):
     
     x, y = img.shape
     

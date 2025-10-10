@@ -135,11 +135,11 @@ for index, row in tqdm(df.iterrows(), total=len(df), desc = 'Total progress:'):
     nir = cv.imread(path_nir,-1)
     re = cv.imread(path_re,-1)
     
-    b = add_padding(max_x, max_y, b)
-    g = add_padding(max_x, max_y, g)
-    r = add_padding(max_x, max_y, r)
-    nir = add_padding(max_x, max_y, nir)
-    re = add_padding(max_x, max_y, re)
+    b = add_padding(b, max_x, max_y)
+    g = add_padding(g, max_x, max_y)
+    r = add_padding(r, max_x, max_y)
+    nir = add_padding(nir, max_x, max_y)
+    re = add_padding(re, max_x, max_y)
     
     vi_directory_dict = {}
     average_dict = {}
