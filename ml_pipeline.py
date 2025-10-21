@@ -190,7 +190,7 @@ if __name__ =='__main__':
                  color=np.random.rand(3,), markersize = 1,)
     ax[0].set_xticks([])
     ax[0].set_yticks([])
-    ax[0].set_title('Leaf Water Content')
+    # ax[0].set_title('Leaf Water Content')
     ax[0].grid()
     
     # ax[1].plot(y_avocado, y_pred_avo, marker = 'o', linestyle = '', 
@@ -210,10 +210,30 @@ if __name__ =='__main__':
                  color=np.random.rand(3,), markersize = 1)
     ax[1].set_xticks([])
     ax[1].set_yticks([])
-    ax[1].set_title('Biomass Concentration')
+    # ax[1].set_title('Biomass Concentration')
     ax[1].grid()
+    ax.text(0.05, 0.95, f'$R^2 = 0.891$', transform=ax.transAxes, fontsize=12,
+            verticalalignment='top', bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5))
     
     plt.tight_layout()
+    #%%
+    
+    plt.rcParams['font.family'] = 'serif'
+    plt.rcParams['font.serif'] = ['Times New Roman']
+    plt.rcParams['font.size'] = 16
+    
+    x = np.linspace(1,6,10)
+    fig, ax = plt.subplots(1,1)
+    ax.plot(y_avocado, y_pred_avo, marker = 'o', linestyle = '',
+            color= np.random.rand(3,), markersize = 3)
+    ax.grid()
+    ax.set_title('Leaf Water Content')
+    ax.set_xlabel('Predicted Values')
+    ax.set_ylabel('Real Values')
+    ax.plot(x,x)
+    ax.text(0.05, 0.95, f'$R^2 = 0.891$', transform=ax.transAxes, fontsize=12,
+            verticalalignment='top', bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5))
+    
     #%%
     np.random.seed(42)
 
