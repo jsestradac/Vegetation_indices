@@ -6,3 +6,6 @@ Dataset_with_images.csv
 output.csv
 total_data.csv
 Sample_code_avocado.mlx
+Figures/
+Models/
+metrics.csv
