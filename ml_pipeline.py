@@ -26,7 +26,7 @@ from sklearn.datasets import load_diabetes
 from sklearn.metrics import r2_score, root_mean_squared_error, mean_absolute_error
 import joblib
 
-#%%
+#%% Define features and empty lists
 vi_features = ['ndvi', 'gndvi', 'ndre', 'sipi','ngbdi', 'ngrdi',
             'grdi', 'nbgvi', 'negi', 'mgrvi', 'mvari', 'rgbvi',
             'tgi', 'vari', 'grri', 'nri', 'grvi', 'sr', 'savi',
@@ -43,7 +43,7 @@ targets = ['WBI', 'MSI', 'MSI1', 'MSI2',
            'MAX', 'VOG1', 'SPADI', 'PSRI', 
            'RVSI', 'NDVI1', 'SIPI', 'LIC2',
            'DD']
-#%%
+
 mean_features = [feature + '_mean' for feature in vi_features]
 med_features = [feature + '_med' for feature in vi_features]
 mode_features = [feature +'_mode' for feature in vi_features]
@@ -79,7 +79,11 @@ list_models = []
 if __name__ =='__main__':
     
     #%% Define Model and params
-    #model_name = 'SVR'
+    
+    plt.rcParams['font.family'] = 'serif'
+    plt.rcParams['font.serif'] = ['Times New Roman']
+    plt.rcParams['font.size'] = 10
+    
     data = pd.read_csv('Data_with_vi_and_band_descriptors.csv')
     train, test, y_train, y_test = train_test_split(data, data,
                                                         test_size = 0.2)
@@ -177,12 +181,6 @@ if __name__ =='__main__':
     
         for target in targets:
             
-            if target != 'LWI':
-                print(target)
-                continue
-        
-            
-            
             vi_model = target + '_' + model_name
             print(vi_model)
             list_models.append(vi_model)
@@ -234,6 +232,7 @@ if __name__ =='__main__':
             
             x_vector = np.linspace(0.95*y_min, 1.05*y_max,100)
             
+            #%% print results
             # print('\nTRAIN DATA\n')
             # print(f"R² : {r2_tr:.3f}")
             # print(f"RMSE: {rmse_tr:.3f}")
@@ -260,6 +259,7 @@ if __name__ =='__main__':
             # print(f"R² : {r2_grape:.3f}")
             # print(f"RMSE: {rmse_grape:.3f}")
             # print(f"MAE: {mae_grape:.3f}")
+            #%% append results to lists
             
             list_r2.append(r2)
             list_r2_avo.append(r2_avo)
@@ -282,15 +282,8 @@ if __name__ =='__main__':
             
             list_param.append(str(grid.best_params_))
             
+            #%% plot results
             
-            
-            
-            
-            
-            #%%
-            plt.rcParams['font.family'] = 'serif'
-            plt.rcParams['font.serif'] = ['Times New Roman']
-            plt.rcParams['font.size'] = 10
             
             fig, ax = plt.subplots(2, 2)
             ax[0,0].plot(y_test, y_pred, marker = 'o', linestyle = '', 
@@ -374,7 +367,7 @@ if __name__ =='__main__':
             
             joblib.dump(grid, model_path)
             
-            break
+#%% save metrics to a csv
             
     metrics = {'model': list_models,
                'mae': list_mae,
