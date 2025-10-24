@@ -177,7 +177,10 @@ if __name__ =='__main__':
     pipelines = [pipeline_SVR, pipeline_RF, pipeline_mlp, pipeline_xgb, pipeline_ridge]
     grids = [param_grid_SVR, param_grid_RF, param_grid_mlp, param_grid_xgb, param_grid_ridge]
     #%% Main loop
-    for model_name, pipeline, param_grid in zip(model_names, pipelines, grids):    
+    for model_name, pipeline, param_grid in zip(model_names, pipelines, grids):  
+        
+        if model_name != 'Ridge':
+            continue
     
         for target in targets:
             
@@ -390,7 +393,11 @@ if __name__ =='__main__':
             }
     
     metrics_df = pd.DataFrame(metrics)
-    metrics_df.to_csv('metrics.csv', index='False')
+    metrics_df.to_csv('metrics_.csv', index='False')
+    
+#%%
+
+metrics_sorted = metrics_df.sort_values(by='model')
     
         
     
