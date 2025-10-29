@@ -91,8 +91,8 @@ if __name__ =='__main__':
     # x_train = train.loc[:, features]
     # x_test = test.loc[:, features]
     
-    train = pd.read_csv('train_data.csv')
-    test = pd.read_csv('test_data.csv')
+    train = pd.read_csv('Data/train_data.csv')
+    test = pd.read_csv('Data/test_data.csv')
     
     x_train = train.loc[:, features]
     x_test = test.loc[:, features]
