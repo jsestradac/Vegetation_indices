@@ -1,6 +1,8 @@
 Avocado/
 Olive/
 Vineyard/
+Metrics/
+Data/
 Data_with_descriptors.csv
 Dataset_with_images.csv
 output.csv

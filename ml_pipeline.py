@@ -25,6 +25,7 @@ from sklearn.neural_network import MLPRegressor
 from sklearn.datasets import load_diabetes
 from sklearn.metrics import r2_score, root_mean_squared_error, mean_absolute_error
 import joblib
+from tqdm import tqdm
 
 #%% Define features and empty lists
 vi_features = ['ndvi', 'gndvi', 'ndre', 'sipi','ngbdi', 'ngrdi',
@@ -84,9 +85,15 @@ if __name__ =='__main__':
     plt.rcParams['font.serif'] = ['Times New Roman']
     plt.rcParams['font.size'] = 10
     
-    data = pd.read_csv('Data_with_vi_and_band_descriptors.csv')
-    train, test, y_train, y_test = train_test_split(data, data,
-                                                        test_size = 0.2)
+    # data = pd.read_csv('Data_with_vi_and_band_descriptors.csv')
+    # train, test, y_train, y_test = train_test_split(data, data,
+    #                                                     test_size = 0.2)
+    # x_train = train.loc[:, features]
+    # x_test = test.loc[:, features]
+    
+    train = pd.read_csv('train_data.csv')
+    test = pd.read_csv('test_data.csv')
+    
     x_train = train.loc[:, features]
     x_test = test.loc[:, features]
     
@@ -110,6 +117,7 @@ if __name__ =='__main__':
     
     pipeline_SVR = Pipeline(preprocessing_SVR)
     param_grid_SVR={
+                'select__k': [5, 8, 10, 15 , 20],
                 'SVR__C': [0.1, 1, 10, 100, 1000],
                 'SVR__epsilon': [0.01, 0.05, 1, 5, 10],
                 'SVR__gamma': [0.01, 0.05, 1, 5, 10],
@@ -122,6 +130,7 @@ if __name__ =='__main__':
         ('rf', RandomForestRegressor())]
     
     param_grid_RF = {
+                    'select__k': [5, 8, 10, 15 , 20],
                     'rf__n_estimators': [100, 200, 500, 1000 ],           # number of trees
                     'rf__max_depth': [None, 10, 20, 30, 40],          # tree depth
                     'rf__min_samples_split': [2, 5, 7, 10, 15, 20]           # minimum samples to split
@@ -134,7 +143,8 @@ if __name__ =='__main__':
         ('select', SelectKBest(score_func = f_regression, k = 8)),
         ('mlp', MLPRegressor(max_iter=1000, random_state=42))]
     
-    param_grid_mlp = {                     
+    param_grid_mlp = {
+                    'select__k': [5, 8, 10, 15 , 20],                     
                     'mlp__hidden_layer_sizes': [(50,), (100,), (50, 50)], 
                     'mlp__activation': ['relu', 'tanh'],           
                     'mlp__alpha': [0.0001, 0.001, 0.01],           
@@ -155,6 +165,7 @@ if __name__ =='__main__':
         ])
     
     param_grid_xgb = {
+                    'select__k': [5, 8, 10, 15 , 20],
                     'xgb__n_estimators': [100, 200, 500, 1000],     # number of trees
                     'xgb__max_depth': [3, 5, 7, 10],         # tree depth
                     'xgb__learning_rate': [0.01, 0.1],   # step size shrinkage
@@ -168,21 +179,38 @@ if __name__ =='__main__':
                                 ('ridge', Ridge(random_state=42))
                             ])
     
-    param_grid_ridge = { 'ridge__alpha': [0.001, 0.01, 0.1, 1, 10, 100],   # Regularization strength
+    param_grid_ridge = { 
+                         'select__k': [5, 8, 10, 15 , 20],
+                         'ridge__alpha': [0.001, 0.01, 0.1, 1, 10, 100],   # Regularization strength
                          'ridge__fit_intercept': [True, False],
-                         'ridge__solver': ['auto', 'svd', 'cholesky', 'lsqr', 'saga']
+                         'ridge__solver': ['auto', 'svd', 'cholesky', 'lsqr', 'saga'],
+                         'ridge__max_iter':[10, 50, 100, 300, 1000]
                         }
     
     model_names = ['SVR', 'RF', 'MLP', 'XGB', 'Ridge']
     pipelines = [pipeline_SVR, pipeline_RF, pipeline_mlp, pipeline_xgb, pipeline_ridge]
     grids = [param_grid_SVR, param_grid_RF, param_grid_mlp, param_grid_xgb, param_grid_ridge]
-    #%% Main loop
-    for model_name, pipeline, param_grid in zip(model_names, pipelines, grids):  
-        
-        if model_name != 'Ridge':
-            continue
     
-        for target in targets:
+    model_folder = os.path.join('Models','K_best')
+    if not os.path.isdir(model_folder):
+        os.mkdir(model_folder)
+        
+    figure_folder = os.path.join('Figures', 'k_best')
+    if not os.path.isdir(figure_folder):
+        os.mkdir(figure_folder)
+        
+        
+    #%% Main loop
+    for model_name, pipeline, param_grid in tqdm(zip(model_names, pipelines, grids),
+                                                 desc = 'Different Regressors'): 
+        
+        if not model_name == 'Ridge':
+            print(model_name)
+            continue
+        
+        
+    
+        for target in tqdm(targets, desc = 'Vegetation indices', leave = False):
             
             vi_model = target + '_' + model_name
             print(vi_model)
@@ -344,9 +372,20 @@ if __name__ =='__main__':
             fig.tight_layout()
             plt.show()
             
-            model_path = 'Models/' + target + '_' + model_name + '.pkl'
-            figure_path = 'Figures/' + target + '_' + model_name + '.pdf'
-            fig.savefig(figure_path)
+            model_name_path = target + '_' + model_name + '.pkl'
+            figure_name_pdf = target + '_' + model_name + '.pdf'
+            figure_name_png = target + '_' + model_name + '.png'
+            
+            model_path = os.path.join(model_folder, model_name_path)
+            
+            
+            figure_path_pdf = os.path.join(figure_folder, figure_name_pdf)
+            figure_path_png = os.path.join(figure_folder, figure_name_png)
+            
+            
+            
+            fig.savefig(figure_path_pdf)
+            fig.savefig(figure_path_png)
             
             fig2, ax = plt.subplots(1,1)
             ax.plot(y_train, y_pred_tr, marker = 'o', linestyle = '', 
@@ -363,9 +402,48 @@ if __name__ =='__main__':
             
             plot_title = model_name + ' Results for: ' + target + ' (Training) '
             #figure_path = 'Figures/SVR_' + target + '_training.pdf'
-            figure_path = 'Figures/' + target + '_' + model_name + '_training.pdf'
+            figure_name_pdf =  target + '_' + model_name + '_training.pdf'
+            figure_name_png =  target + '_' + model_name + '_training.png'
+            
+            
+            figure_path_pdf = os.path.join(figure_folder, figure_name_pdf)
+            figure_path_png = os.path.join(figure_folder, figure_name_png)
+            
             fig2.suptitle(plot_title)
-            fig2.savefig(figure_path)
+            fig2.savefig(figure_path_pdf)
+            fig2.savefig(figure_path_png)
+            
+            
+            fig3, ax = plt.subplots(1,1)
+            plot_title = model_name + ' Results for: ' + target 
+            ax.plot(y_test, y_pred, marker = 'o', linestyle = '', 
+                         color = 'red', markersize = 3,)
+            ax.plot(x_vector, x_vector)
+            ax.grid()
+            ax.set_title(plot_title)
+            ax.set_xlabel('Predicted Values')
+            ax.set_ylabel('Real Values')
+            ax.text(0.05, 0.95, f'$R^2$ = {r2:.3f}\nRMSE = {rmse:.3f}\nMAE = {mae:.3f}', 
+                         transform=ax.transAxes, fontsize=8,
+                         verticalalignment='top', 
+                         bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5))
+            
+            new_folder_path = os.path.join(figure_folder,'Full_data')
+            
+            if not os.path.isdir(new_folder_path):
+                os.mkdir(new_folder_path)
+            
+            
+            name_figure_pdf = target + '_' + model_name + '_full_data.pdf'
+            name_figure_png = target + '_' + model_name + '_full_data.png'
+            
+            
+            figure_path = os.path.join(new_folder_path, name_figure_pdf)
+            figure_path2 = os.path.join(new_folder_path, name_figure_png)
+            
+            fig3.tight_layout()
+            fig3.savefig(figure_path)
+            fig3.savefig(figure_path2)
             
             
             joblib.dump(grid, model_path)
@@ -392,8 +470,9 @@ if __name__ =='__main__':
                        
             }
     
+    
     metrics_df = pd.DataFrame(metrics)
-    metrics_df.to_csv('metrics_.csv', index='False')
+    metrics_df.to_csv('metrics_k_best_.csv', index='False')
     
 #%%
 

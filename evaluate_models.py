@@ -12,7 +12,7 @@ from sklearn.metrics import r2_score, root_mean_squared_error, mean_absolute_err
 import numpy as np
 from matplotlib import pyplot as plt
 from tqdm import tqdm
-
+import sys
 
 vi_features = ['ndvi', 'gndvi', 'ndre', 'sipi','ngbdi', 'ngrdi',
             'grdi', 'nbgvi', 'negi', 'mgrvi', 'mvari', 'rgbvi',
@@ -62,10 +62,13 @@ list_rmse_tr = []
 
 list_models = []
 
-models_path = 'Models'
+models_path = 'Models/K_best'
 
 models_list = os.listdir(models_path)
 
+if not models_list:
+    sys.exit('Error in the models folder')
+    
 
 train = pd.read_csv('train_data.csv')
 test = pd.read_csv('test_data.csv')
@@ -214,8 +217,8 @@ for model_name in tqdm(models_list, desc = 'progress', total = len(models_list))
     #model_path = 'Models/' + target + '_' + model_name + '.pkl'
     figure_path = 'Figures/' + vi + '_' + regressor + '.pdf'
     figure_path2 = 'Figures/' + vi + '_' + regressor + '.png'
-    fig.savefig(figure_path)
-    fig.savefig(figure_path2)
+    # fig.savefig(figure_path)
+    # fig.savefig(figure_path2)
     
     
     fig2, ax = plt.subplots(1,1)
@@ -236,8 +239,8 @@ for model_name in tqdm(models_list, desc = 'progress', total = len(models_list))
     figure_path = 'Figures/' + vi + '_' + regressor + '_training.png'
     figure_path2 = 'Figures/' + vi + '_' + regressor + '_training.pdf'
     fig2.suptitle(plot_title)
-    fig2.savefig(figure_path)
-    fig2.savefig(figure_path2)
+    # fig2.savefig(figure_path)
+    # fig2.savefig(figure_path2)
     
     
     
@@ -271,8 +274,8 @@ for model_name in tqdm(models_list, desc = 'progress', total = len(models_list))
     figure_path2 = os.path.join(new_folder_path, name_figure_png)
     
     fig3.tight_layout()
-    fig3.savefig(figure_path)
-    fig3.savefig(figure_path2)
+    # fig3.savefig(figure_path)
+    # fig3.savefig(figure_path2)
     
     
 metrics = {'model': list_models,
@@ -296,20 +299,22 @@ metrics = {'model': list_models,
         }
 
 metrics_df = pd.DataFrame(metrics)
-metrics_sorted = metrics_df.sort_values(by = 'model')
-metrics_sorted.to_csv('metrics_recreated.csv', index='False')
+#metrics_sorted = metrics_df.sort_values(by = 'model')
+metrics_df.to_csv('metrics_recreated_k_best.csv', index='False')
 
 
 #%%
 
-metrics = pd.read_csv('metrics.csv')
-metrics_sorted = metrics.sort_values(by = 'model')
-metrics_sorted.to_csv('metrics_sorted.csv', index ='False')
+# metrics = pd.read_csv('metrics.csv')
+metrics_sorted = metrics_df.sort_values(by = 'model')
+metrics_sorted.to_csv('metrics_sorted_k_best.csv', index ='False')
 
 #%% 
 
+metrics_recreated = pd.read_csv('metrics_recreated_k_best.csv')
+metrics_recreated = metrics_recreated.sort_values(by = 'model')   
 
-    
-    
+#%%
+
     
     
