@@ -7,4 +7,4 @@ Dataframe that contains all the vegetation indices from spectral reflectance val
 
 The utils.py contains important functions such as the get_spectral that receives as input the dataframe and returns the spectral values from 350 to 25000 nm as an array. 
 To load the .tiff files the cv2.imread function is recommended using the structure cv.imread(img_path, -1), if the -1 is not added in the function it will not properly read the 16 bit function, the same goes for saving any image, 
-if cv.imwrite(impath
+if cv.imwrite(impath, -1)
