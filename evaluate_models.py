@@ -31,12 +31,39 @@ targets = ['WBI', 'MSI', 'MSI1', 'MSI2',
            'RVSI', 'NDVI1', 'SIPI', 'LIC2',
            'DD']
 
+texture_features = ['ASM', 'contrast', 'correlation', 'dissimilarity', 'energy',
+                     'entropy', 'homogeneity', 'mean', 'std', 'variance']
+
+blue_textures = [texture_feature +'_B' for texture_feature in texture_features]
+red_textures = [texture_feature +'_R' for texture_feature in texture_features]
+green_textures = [texture_feature +'_G' for texture_feature in texture_features]
+re_textures = [texture_feature +'_RE' for texture_feature in texture_features]
+nir_textures = [texture_feature +'_NIR' for texture_feature in texture_features]
+
 mean_features = [feature + '_mean' for feature in vi_features]
 med_features = [feature + '_med' for feature in vi_features]
 mode_features = [feature +'_mode' for feature in vi_features]
 
+
+
 features = ['FMC_f', 'FMC_d', 'chlorophyll',*mean_features, *med_features,
-                  *mode_features]
+                 *mode_features]
+
+features = [*mean_features, *med_features, *mode_features]
+
+features = [*mean_features, *med_features, *mode_features,
+            *blue_textures, *red_textures, *green_textures,
+            *re_textures, *nir_textures]
+
+
+     
+figure_folder = os.path.join('Figures','no_FMC_20')
+if not os.path.isdir(figure_folder):
+     os.mkdir(figure_folder)
+
+models_path = 'Models/vis_texture/_20'
+
+metrics_path = 'Metrics/metrics_recreated_no_FMC_20.csv'
 
 list_r2 = []
 list_r2_avo = []
@@ -62,7 +89,6 @@ list_rmse_tr = []
 
 list_models = []
 
-models_path = 'Models/K_best'
 
 models_list = os.listdir(models_path)
 
@@ -70,8 +96,8 @@ if not models_list:
     sys.exit('Error in the models folder')
     
 
-train = pd.read_csv('train_data.csv')
-test = pd.read_csv('test_data.csv')
+train = pd.read_csv('Data/train_total.csv')
+test = pd.read_csv('Data/test_total.csv')
 
 x_train = train.loc[:, features]
 x_test = test.loc[:, features]
@@ -212,21 +238,24 @@ for model_name in tqdm(models_list, desc = 'progress', total = len(models_list))
     
     fig.suptitle(plot_title)
     fig.tight_layout()
-    plt.show()
     
-    #model_path = 'Models/' + target + '_' + model_name + '.pkl'
-    figure_path = 'Figures/' + vi + '_' + regressor + '.pdf'
-    figure_path2 = 'Figures/' + vi + '_' + regressor + '.png'
-    # fig.savefig(figure_path)
-    # fig.savefig(figure_path2)
+    figure_name_pdf = vi + '_' + regressor + '.pdf'
+    figure_name_png = vi + '_' + regressor + '.png'
+    
+    figure_path_pdf = os.path.join(figure_folder, figure_name_pdf)
+    figure_path_png = os.path.join(figure_folder, figure_name_png)
+    
+    # fig.savefig(figure_path_pdf)
+    # fig.savefig(figure_path_png)
     
     
     fig2, ax = plt.subplots(1,1)
     ax.plot(y_train, y_pred_tr, marker = 'o', linestyle = '', 
                  color='red', markersize = 1,)
+    plot_title = regressor + ' Results for: ' + vi + ' (Training) '
     ax.plot(x_vector, x_vector)
     ax.grid()
-    ax.set_title('Leaf Water Content')
+    ax.set_title(plot_title)
     ax.set_xlabel('Predicted Values')
     ax.set_ylabel('Real Values')
     ax.text(0.05, 0.95, f'$R^2$ = {r2_tr:.3f}\nRMSE = {rmse_tr:.3f}\nMAE = {mae_tr:.3f}$', 
@@ -234,16 +263,16 @@ for model_name in tqdm(models_list, desc = 'progress', total = len(models_list))
                  verticalalignment='top', 
                  bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5))
     
-    plot_title = regressor + ' Results for: ' + vi + ' (Training) '
-    #figure_path = 'Figures/SVR_' + target + '_training.pdf'
-    figure_path = 'Figures/' + vi + '_' + regressor + '_training.png'
-    figure_path2 = 'Figures/' + vi + '_' + regressor + '_training.pdf'
-    fig2.suptitle(plot_title)
-    # fig2.savefig(figure_path)
-    # fig2.savefig(figure_path2)
     
+   
+    figure_name_pdf = vi + '_' + regressor + '_training.pdf'
+    figure_name_png = vi + '_' + regressor + '_training.png'
     
+    figure_path_pdf = os.path.join(figure_folder, figure_name_pdf)
+    figure_path_png = os.path.join(figure_folder, figure_name_png)
     
+    # fig2.savefig(figure_path_pdf)
+    # fig2.savefig(figure_path_png)
     
     
     fig3, ax = plt.subplots(1,1)
@@ -260,7 +289,7 @@ for model_name in tqdm(models_list, desc = 'progress', total = len(models_list))
                  verticalalignment='top', 
                  bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5))
     
-    new_folder_path = os.path.join('Figures','Full_data')
+    new_folder_path = os.path.join(figure_folder,'Full_data')
     
     if not os.path.isdir(new_folder_path):
         os.mkdir(new_folder_path)
@@ -270,12 +299,14 @@ for model_name in tqdm(models_list, desc = 'progress', total = len(models_list))
     name_figure_png = vi + '_' + regressor + '_full_data.png'
     
     
-    figure_path = os.path.join(new_folder_path, name_figure_pdf)
-    figure_path2 = os.path.join(new_folder_path, name_figure_png)
+    figure_path_pdf = os.path.join(new_folder_path, name_figure_pdf)
+    figure_path_png = os.path.join(new_folder_path, name_figure_png)
     
-    fig3.tight_layout()
-    # fig3.savefig(figure_path)
-    # fig3.savefig(figure_path2)
+    # fig3.tight_layout()
+    # fig3.savefig(figure_path_pdf)
+    # fig3.savefig(figure_path_png)
+    
+    plt.show()
     
     
 metrics = {'model': list_models,
@@ -298,23 +329,12 @@ metrics = {'model': list_models,
                    
         }
 
-metrics_df = pd.DataFrame(metrics)
-#metrics_sorted = metrics_df.sort_values(by = 'model')
-metrics_df.to_csv('metrics_recreated_k_best.csv', index='False')
+# metrics_df = pd.DataFrame(metrics)
+# metrics_df.to_csv(metrics_path, index='False')
 
 
-#%%
+  
 
-# metrics = pd.read_csv('metrics.csv')
-metrics_sorted = metrics_df.sort_values(by = 'model')
-metrics_sorted.to_csv('metrics_sorted_k_best.csv', index ='False')
-
-#%% 
-
-metrics_recreated = pd.read_csv('metrics_recreated_k_best.csv')
-metrics_recreated = metrics_recreated.sort_values(by = 'model')   
-
-#%%
 
     
     
