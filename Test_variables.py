@@ -48,22 +48,38 @@ targets = ['WBI', 'MSI', 'MSI1', 'MSI2',
            'RVSI', 'NDVI1', 'SIPI', 'LIC2',
            'DD']
 
+
+
+texture_features = ['ASM', 'contrast', 'correlation', 'dissimilarity', 'energy',
+                     'entropy', 'homogeneity', 'mean', 'std', 'variance']
+
+blue_textures = [texture_feature +'_B' for texture_feature in texture_features]
+red_textures = [texture_feature +'_R' for texture_feature in texture_features]
+green_textures = [texture_feature +'_G' for texture_feature in texture_features]
+re_textures = [texture_feature +'_RE' for texture_feature in texture_features]
+nir_textures = [texture_feature +'_NIR' for texture_feature in texture_features]
+
 mean_features = [feature + '_mean' for feature in vi_features]
 med_features = [feature + '_med' for feature in vi_features]
 mode_features = [feature +'_mode' for feature in vi_features]
 
-features = ['FMC_f', 'FMC_d', 'chlorophyll',*mean_features, *med_features,
-                 *mode_features]
-
 features = [*mean_features, *med_features, *mode_features]
 
-train = pd.read_csv('Data/train_data.csv')
-test = pd.read_csv('Data/test_data.csv')
+features = [*mean_features, *med_features, *mode_features,
+            *blue_textures, *red_textures, *green_textures,
+            *re_textures, *nir_textures]
+
+features = ['FMC_d',*mean_features, *med_features, *mode_features,
+            *blue_textures, *red_textures, *green_textures,
+            *re_textures, *nir_textures]
+
+train = pd.read_csv('Data/train_total.csv')
+test = pd.read_csv('Data/test_total.csv')
 
 x_train = train.loc[:, features]
 x_test = train.loc[:, features]
 
-models_folder = 'Models/no_FMC_20'
+models_folder = 'Models/vis_texture_fmc/_195'
 
 models = os.listdir(models_folder)
 
@@ -79,8 +95,8 @@ counts = []
 
 for i, model_name in enumerate(models):
     
-    # if i%5 != 0:
-    #     continue
+    if i%5 != 0:
+        continue
     
     model_path = os.path.join(models_folder, model_name)
     
@@ -128,23 +144,48 @@ for i, model_name in enumerate(models):
         
         }).sort_values(by = 'Score', ascending = False)
     
-    top_feature = feature_importance.iloc[0]['Feature']
-    
+    top_feature = feature_importance.iloc[0:5]['Feature']
+    top_feature = top_feature.to_list()
+        
     select_k = best_params['select__k']
     counts.append(select_k)
     
-    top_features.append(top_feature)
+    top_features.extend(top_feature)
     
-    ff = f'the top feature for {model_name} is {top_feature} '
-    ff2 = f'the number of selected features is : {select_k}'
-    print(ff)
-    print(ff2)
+    # ff = f'the top feature for {model_name} is {top_feature} '
+    # ff2 = f'the number of selected features is : {select_k}'
+    # print(ff)
+    # print(ff2)
     
+#%%
     
-counts = Counter(counts)
-print(counts)
+# counts = Counter(counts)
+# print(counts)
+counts = dict(Counter(top_features))
 
-print(Counter(top_features))
+other_sum = sum(value for value in counts.values() if value ==1)
+counts2 = {k:v for k,v in counts.items() if v > 1}
+counts2["other"] = other_sum
+
+
+
+counts2df = pd.DataFrame(list(counts2.items()), columns=['Feature', 'Count'])
+counts2_sorted = counts2df.sort_values(by='Count', ascending=False)
+
+Features = [feature.upper().replace('_',' ') for feature in counts2_sorted['Feature']]
+
+fig, ax = plt.subplots(1,1,figsize=(4.4,3))
+ax.bar(Features, counts2_sorted['Count'])
+ax.set_title('Most used Features using VIs and Texture')
+ax.tick_params(axis = 'x', rotation = 90)
+ax.grid(linestyle='--', alpha = 0.7)
+fig.tight_layout()
+fig.savefig('Paper/Figures/features_vis_texture_fmc.pdf')
+
+
+#%%
+
+print(counts2)
 
 # scores_array = np.array(scores_list)
 
