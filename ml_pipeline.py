@@ -45,6 +45,8 @@ targets = ['WBI', 'MSI', 'MSI1', 'MSI2',
            'RVSI', 'NDVI1', 'SIPI', 'LIC2',
            'DD']
 
+
+
 texture_features = ['ASM', 'contrast', 'correlation', 'dissimilarity', 'energy',
                      'entropy', 'homogeneity', 'mean', 'std', 'variance']
 
@@ -61,6 +63,11 @@ mode_features = [feature +'_mode' for feature in vi_features]
 features = [*mean_features, *med_features, *mode_features,
             *blue_textures, *red_textures, *green_textures,
             *re_textures, *nir_textures]
+
+features = ['FMC_d',*mean_features, *med_features, *mode_features,
+            *blue_textures, *red_textures, *green_textures,
+            *re_textures, *nir_textures]
+#%%
 
 list_r2 = []
 list_r2_avo = []
@@ -101,15 +108,15 @@ if __name__ =='__main__':
     #                                                     test_size = 0.2)
     # x_train = train.loc[:, features]
     # x_test = test.loc[:, features]
-    parent_model_folder = os.path.join('Models','vis_texture')
+    parent_model_folder = os.path.join('Models','vis_texture_fmc')
     if not os.path.isdir(parent_model_folder):
         os.mkdir(parent_model_folder)
         
-    parent_figure_folder = os.path.join('Figures','vis_texture')
+    parent_figure_folder = os.path.join('Figures','vis_texture_fmc')
     if not os.path.isdir(parent_figure_folder):
         os.mkdir(parent_figure_folder)
         
-    parent_metrics_path = 'Metrics/metrics_no_FMC_texture'
+    parent_metrics_path = 'Metrics/metrics_vis_FMC_texture'
     
     
     k = []
@@ -214,6 +221,7 @@ if __name__ =='__main__':
     pipelines = [pipeline_SVR, pipeline_RF, pipeline_mlp, pipeline_xgb, pipeline_ridge]
     grids = [param_grid_SVR, param_grid_RF, param_grid_mlp, param_grid_xgb, param_grid_ridge]
     select_k_lists = [[20],[50],[75],[100],[150], [194]]
+    select_k_lists = [[20],[80],[195]]
     
         
         
@@ -235,12 +243,14 @@ if __name__ =='__main__':
         
         
         
+        
+        
     
         for model_name, pipeline, param_grid  in zip(model_names, pipelines, grids): 
             
             param_grid['select__k'] = k
-            if not model_name == 'Ridge':
-                #print(model_name)
+            if not model_name == 'XGB':
+                print(model_name)
                 pass
             
             print(k)
@@ -457,7 +467,7 @@ if __name__ =='__main__':
                 
                 joblib.dump(grid, model_path)
                 
-                
+                        
                 
     #%% save metrics to a csv
                 

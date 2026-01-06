@@ -74,19 +74,19 @@ models_folders = ['fmc_vis',
                   'texture',
                   'vis_texture_fmc']
 
-metrics_20 = pd.read_csv('Metrics/metrics_vis_FMC_texture_20k.csv')
-metrics_80 = pd.read_csv('Metrics/metrics_vis_FMC_texture_80k.csv')
-metrics_195 = pd.read_csv('Metrics/metrics_vis_FMC_texture_195k.csv')
+metrics_20 = pd.read_csv('Metrics/metrics_vis_20k.csv')
+metrics_50 = pd.read_csv('Metrics/metrics_vis_50k.csv')
+# metrics_195 = pd.read_csv('Metrics/metrics_vis_FMC_texture_195k.csv')
 
-metrics_20['file'] = 'Models/vis_texture_fmc/_20/' + metrics_20['model'] + '.pkl'
-metrics_80['file'] = 'Models/vis_texture_fmc/_80/' + metrics_80['model'] + '.pkl'
-metrics_195['file'] = 'Models/vis_texture_fmc/_195/'  + metrics_195['model'] + '.pkl'
+metrics_20['file'] = 'Models/vis/_20/' + metrics_20['model'] + '.pkl'
+metrics_50['file'] = 'Models/vis/_50/' + metrics_50['model'] + '.pkl'
+# metrics_195['file'] = 'Models/vis_texture_fmc/_195/'  + metrics_195['model'] + '.pkl'
 
 metrics_20['input'] = 20
-metrics_80['input'] = 80
-metrics_195['input'] = 195
+metrics_50['input'] = 50
+#metrics_195['input'] = 195
 
-metrics_concatenated = pd.concat([metrics_20, metrics_80, metrics_195], ignore_index=True)
+metrics_concatenated = pd.concat([metrics_20, metrics_50], ignore_index=True)
 
 idx_max_r2 = metrics_concatenated.groupby('model')['r2'].idxmax()
 
@@ -103,11 +103,11 @@ best_models['ML_model'] = ML_model
 
 #%%
 
-idx_models_by_VI = best_models.groupby('VI')['r2'].idxmax()
+idx_models_by_VI = best_models.groupby('model')['r2'].idxmax()
 
 best_models_by_VI = best_models.loc[idx_models_by_VI]
 
-best_models_by_VI.to_csv('Metrics/best_models_with_lwc.csv', index = False)
+best_models_by_VI.to_csv('Metrics/a_vis.csv', index = False)
 
 #%%
 

@@ -15,7 +15,7 @@ from joblib import load
 from tqdm import tqdm
 
 
-new_metrics_path = 'Metrics/vis_std.csv'
+new_metrics_path = 'Metrics/_std.csv'
 
 
 data = pd.read_csv('Metrics/a_vis.csv')

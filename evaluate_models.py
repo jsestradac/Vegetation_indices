@@ -46,22 +46,61 @@ mode_features = [feature +'_mode' for feature in vi_features]
 
 
 
-features = ['FMC_f', 'FMC_d', 'chlorophyll',*mean_features, *med_features,
+features_fmc_vis = ['FMC_f', 'FMC_d', 'chlorophyll',*mean_features, *med_features,
                  *mode_features]
 
-features = [*mean_features, *med_features, *mode_features]
+features_vis = [*mean_features, *med_features, *mode_features]
 
-features = [*mean_features, *med_features, *mode_features,
-            *blue_textures, *red_textures, *green_textures,
-            *re_textures, *nir_textures]
+features_vis_texture = [*mean_features, *med_features, *mode_features,
+                       *blue_textures, *red_textures, *green_textures,
+                       *re_textures, *nir_textures]
 
+features_texture = [*blue_textures, *red_textures, *green_textures,
+                    *re_textures, *nir_textures]
+
+features_FMC_vis_texture = ['FMC_d',*mean_features, *med_features, *mode_features,
+                            *blue_textures, *red_textures, *green_textures,
+                            *re_textures, *nir_textures]
+
+features_vec = [features_fmc_vis, 
+                features_vis, 
+                features_vis_texture,
+                features_texture, 
+                features_FMC_vis_texture]
+
+models_folders = ['fmc_vis',
+                  'vis',
+                  'vis_texture',
+                  'texture',
+                  'vis_texture_fmc']
+
+feature_type = input('Choose the input data:\n0.VIS+FMC\n1.VIS\n2.Texture\n3.Texture+VIS\n4.FMC+texture+VIS\n')
+
+index = int(feature_type)
+
+models_folder = models_folders[index]
+features = features_vec[index]
+
+
+models_folder_path = os.path.join('Models', models_folder)
+
+number_of_features = os.listdir(models_folder_path)
+
+prompt2 = 'Choose the number of features: \n'
+for i, ff in enumerate(number_of_features):
+    prompt2 = prompt2 + str(i) + '. ' + ff +'\n'
+    
+index2 = int(input(prompt2))
+    
+models_path = os.path.join(models_folder_path,
+                           number_of_features[index2])
 
      
 figure_folder = os.path.join('Figures','no_FMC_20')
 if not os.path.isdir(figure_folder):
      os.mkdir(figure_folder)
 
-models_path = 'Models/vis_texture/_20'
+
 
 metrics_path = 'Metrics/metrics_recreated_no_FMC_20.csv'
 

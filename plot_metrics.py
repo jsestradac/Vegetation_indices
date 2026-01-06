@@ -60,6 +60,9 @@ kinds_of_data = ['lwc_vis_texture',
                 'texture']
 
 for metrics, kind_of_data in zip(data_input_metrics, kinds_of_data):
+    
+    if metrics != metrics_vis:
+        continue
     combined_metrics = []
     for metric in metrics:
         
@@ -99,8 +102,9 @@ for metrics, kind_of_data in zip(data_input_metrics, kinds_of_data):
     metricas_last.append(metrics_final)
     
 metrics_final = pd.concat(metricas_last,ignore_index=True)
+metrics_final.to_csv('Metrics/a_vis.csv')
     
-    
+   #%% 
 
 metrics_MLP = metrics_final[metrics_final['ML_model']=='MLP']
 metrics_RF = metrics_final[metrics_final['ML_model']=='RF']
@@ -191,7 +195,7 @@ ax[1,0].set_title('Results for SVR')
 
 
 figure.tight_layout()
-figure.savefig(directory)
+#figure.savefig(directory)
 
 
 
@@ -199,30 +203,30 @@ figure.savefig(directory)
 #%%
 
 
-metrics_MLP = metrics_order[metrics_order['ML_model']=='MLP']
-metrics_RF = metrics_order[metrics_order['ML_model']=='RF']
-metrics_XGB = metrics_order[metrics_order['ML_model']=='XGB']
-metrics_SVR = metrics_order[metrics_order['ML_model']=='SVR']
+# metrics_MLP = metrics_order[metrics_order['ML_model']=='MLP']
+# metrics_RF = metrics_order[metrics_order['ML_model']=='RF']
+# metrics_XGB = metrics_order[metrics_order['ML_model']=='XGB']
+# metrics_SVR = metrics_order[metrics_order['ML_model']=='SVR']
 
 
 
-#%%
-figure, ax = plt.subplots(1,1,figsize=(2.3,3))
-ax.plot(metrics_MLP[metric_name], indices, marker = 'o', markersize=2, linestyle='', label='MLP')
-ax.plot(metrics_RF[metric_name], indices, marker = 'o', markersize=2, linestyle='', label='RF')
-ax.plot(metrics_XGB[metric_name], indices, marker = 'o', markersize=2, linestyle='', label = 'XGB')
-ax.plot(metrics_SVR[metric_name], indices, marker = 'o', markersize=2, linestyle='', label = 'SVR')
-ax.legend(fontsize = 6)
-ax.set_xticks([0, 0.25, 0.5, 0.75, 1])
-ax.set_yticks (np.arange(1,25))
-ax.set_yticklabels(metrics_MLP['VI'].to_list())
-ax.tick_params(axis='x', labelsize=6)
-ax.tick_params(axis='y', labelsize=6)
-ax.grid()
-ax.set_xlabel('Mean average error' )
-ax.set_title(title)
-figure.tight_layout()
-figure.savefig(directory)
+# #%%
+# figure, ax = plt.subplots(1,1,figsize=(2.3,3))
+# ax.plot(metrics_MLP[metric_name], indices, marker = 'o', markersize=2, linestyle='', label='MLP')
+# ax.plot(metrics_RF[metric_name], indices, marker = 'o', markersize=2, linestyle='', label='RF')
+# ax.plot(metrics_XGB[metric_name], indices, marker = 'o', markersize=2, linestyle='', label = 'XGB')
+# ax.plot(metrics_SVR[metric_name], indices, marker = 'o', markersize=2, linestyle='', label = 'SVR')
+# ax.legend(fontsize = 6)
+# ax.set_xticks([0, 0.25, 0.5, 0.75, 1])
+# ax.set_yticks (np.arange(1,25))
+# ax.set_yticklabels(metrics_MLP['VI'].to_list())
+# ax.tick_params(axis='x', labelsize=6)
+# ax.tick_params(axis='y', labelsize=6)
+# ax.grid()
+# ax.set_xlabel('Mean average error' )
+# ax.set_title(title)
+# figure.tight_layout()
+# figure.savefig(directory)
 
 
 
@@ -231,7 +235,7 @@ figure.savefig(directory)
 #plt.plot(metrics_no_ridge['r2'], marker='o', markersize = 2, linestyle='')
 
 #%%
-metrics
+# metrics
     
     
    

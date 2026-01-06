@@ -103,6 +103,8 @@ list_rmse_tr = []
 
 list_models = []
 
+list_mae_std = []
+
 
 models = pd.read_csv('metrics/best_models_with_lwc.csv')
 models_list = models['file'].to_list()
@@ -147,6 +149,12 @@ x_test_olive = test_olive.loc[:,features]
 
 test_grape = test[test['Species'] == 'vineyard']
 x_test_grape = test_grape.loc[:,features]
+
+
+x_test.loc[:,'FMC_d'] = lwc_real
+#x_test.loc[:,'FMC_d'] = x_test['FMC_d'].apply(lambda x: x +np.random.uniform(0,24))
+
+metrics_path = 'Metrics/real_lwc.csv'
 #%%
 
 
@@ -161,7 +169,7 @@ for model_name in tqdm(models_list, desc = 'progress', total = len(models_list))
     
     # x_test.loc[:,'FMC_d'] = x_test['FMC_d'].apply(lambda x: x +np.random.uniform(0,11))
     
-    x_test.loc[:,'FMC_d'] = lwc_mobilent_down
+    
 
     
     vi = model_str.split('_')[0]
@@ -186,6 +194,12 @@ for model_name in tqdm(models_list, desc = 'progress', total = len(models_list))
     r2_avo = r2_score(y_test_avo, y_pred_avo)
     r2_olive = r2_score(y_test_olive, y_pred_olive)
     r2_grape = r2_score(y_test_grape, y_pred_grape)
+    
+    err = y_pred - y_test
+    
+    err_np = err.to_numpy()
+    
+    mae_std = np.std(err)
     
     rmse_tr = root_mean_squared_error(y_train, y_pred_tr)
     rmse = root_mean_squared_error(y_pred, y_test)
@@ -228,136 +242,138 @@ for model_name in tqdm(models_list, desc = 'progress', total = len(models_list))
     
     list_param.append(str(model.best_params_))
     list_models.append(model_name)
+    list_mae_std.append(mae_std)
     
-    fig, ax = plt.subplots(2, 2, figsize=(4.3,2.33))
-    ax[0,0].plot(y_test, y_pred, marker = 'o', linestyle = '', 
-                 color = 'red', markersize = 1,)
-    ax[0,0].plot(x_vector, x_vector)
-    ax[0,0].grid()
-    ax[0,0].set_title('Complete Dataset')
-    ax[0,0].set_xlabel('Predicted Values')
-    ax[0,0].set_ylabel('Real Values')
-    ax[0,0].text(0.05, 0.95, f'$R^2$ = {r2:.3f}\nRMSE = {rmse:.3f}\nMAE = {mae:.3f}', 
-                 transform=ax[0,0].transAxes, fontsize=8,
-                 verticalalignment='top', 
-                 bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5))
+    # fig, ax = plt.subplots(2, 2, figsize=(4.3,2.33))
+    # ax[0,0].plot(y_test, y_pred, marker = 'o', linestyle = '', 
+    #              color = 'red', markersize = 1,)
+    # ax[0,0].plot(x_vector, x_vector)
+    # ax[0,0].grid()
+    # ax[0,0].set_title('Complete Dataset')
+    # ax[0,0].set_xlabel('Predicted Values')
+    # ax[0,0].set_ylabel('Real Values')
+    # ax[0,0].text(0.05, 0.95, f'$R^2$ = {r2:.3f}\nRMSE = {rmse:.3f}\nMAE = {mae:.3f}', 
+    #              transform=ax[0,0].transAxes, fontsize=8,
+    #              verticalalignment='top', 
+    #              bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5))
     
-    ax[0,1].plot(y_test_avo, y_pred_avo, marker = 'o', linestyle = '', 
-                 color = 'red', markersize = 1,)
-    ax[0,1].plot(x_vector, x_vector)
-    ax[0,1].grid()
-    ax[0,1].set_title('Avocado')
-    ax[0,1].set_xlabel('Predicted Values')
-    ax[0,1].set_ylabel('Real Values')
-    ax[0,1].text(0.05, 0.95, f'$R^2$ = {r2_avo:.3f}\nRMSE = {rmse_avo:.3f}\nMAE = {mae_avo:.3f}', 
-                 transform=ax[0,1].transAxes, fontsize=8,
-                 verticalalignment='top', 
-                 bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5))
+    # ax[0,1].plot(y_test_avo, y_pred_avo, marker = 'o', linestyle = '', 
+    #              color = 'red', markersize = 1,)
+    # ax[0,1].plot(x_vector, x_vector)
+    # ax[0,1].grid()
+    # ax[0,1].set_title('Avocado')
+    # ax[0,1].set_xlabel('Predicted Values')
+    # ax[0,1].set_ylabel('Real Values')
+    # ax[0,1].text(0.05, 0.95, f'$R^2$ = {r2_avo:.3f}\nRMSE = {rmse_avo:.3f}\nMAE = {mae_avo:.3f}', 
+    #              transform=ax[0,1].transAxes, fontsize=8,
+    #              verticalalignment='top', 
+    #              bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5))
     
-    ax[1,0].plot(y_test_olive, y_pred_olive, marker = 'o', linestyle = '', 
-                 color='red', markersize = 1,)
-    ax[1,0].plot(x_vector, x_vector)
-    ax[1,0].grid()
-    ax[1,0].set_title('Olive')
-    ax[1,0].set_xlabel('Predicted Values')
-    ax[1,0].set_ylabel('Real Values')
-    ax[1,0].text(0.05, 0.95, f'$R^2 $= {r2_olive:.3f}\nRMSE = {rmse_olive:.3f}\nMAE = {mae_olive:.3f}', 
-                 transform=ax[1,0].transAxes, fontsize=8,
-                 verticalalignment='top', 
-                 bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5))
-    
-    
-    ax[1,1].plot(y_test_grape, y_pred_grape, marker = 'o', linestyle = '', 
-                 color = 'red', markersize = 1,)
-    ax[1,1].plot(x_vector, x_vector)
-    ax[1,1].grid()
-    ax[1,1].set_title('Grape')
-    ax[1,1].set_xlabel('Predicted Values')
-    ax[1,1].set_ylabel('Real Values')
-    ax[1,1].text(0.05, 0.95, f'$R^2$ = {r2_grape:.3f}\nRMSE = {rmse_grape:.3f}\nMAE = {mae_grape:.3f}', 
-                 transform=ax[1,1].transAxes, fontsize=8,
-                 verticalalignment='top', 
-                 bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5))
-    
-    regressor = 'Real LWC '
-    
-    plot_title = regressor + ' Results for: ' + vi
-    
-    fig.suptitle(plot_title)
-    fig.tight_layout()
-    
-    figure_name_pdf = vi + '_' + regressor + '.pdf'
-    figure_name_png = vi + '_' + regressor + '.png'
-    
-    figure_path_pdf = os.path.join(figure_folder, figure_name_pdf)
-    figure_path_png = os.path.join(figure_folder, figure_name_png)
-    
-    # fig.savefig(figure_path_pdf)
-    # fig.savefig(figure_path_png)
+    # ax[1,0].plot(y_test_olive, y_pred_olive, marker = 'o', linestyle = '', 
+    #              color='red', markersize = 1,)
+    # ax[1,0].plot(x_vector, x_vector)
+    # ax[1,0].grid()
+    # ax[1,0].set_title('Olive')
+    # ax[1,0].set_xlabel('Predicted Values')
+    # ax[1,0].set_ylabel('Real Values')
+    # ax[1,0].text(0.05, 0.95, f'$R^2 $= {r2_olive:.3f}\nRMSE = {rmse_olive:.3f}\nMAE = {mae_olive:.3f}', 
+    #              transform=ax[1,0].transAxes, fontsize=8,
+    #              verticalalignment='top', 
+    #              bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5))
     
     
-    fig2, ax = plt.subplots(1,1, figsize = (4.31,2.3))
-    ax.plot(y_train, y_pred_tr, marker = 'o', linestyle = '', 
-                 color='red', markersize = 1,)
-    plot_title = regressor + ' Results for: ' + vi + ' (Training) '
-    ax.plot(x_vector, x_vector)
-    ax.grid()
-    ax.set_title(plot_title)
-    ax.set_xlabel('Predicted Values')
-    ax.set_ylabel('Real Values')
-    ax.text(0.05, 0.95, f'$R^2$ = {r2_tr:.3f}\nRMSE = {rmse_tr:.3f}\nMAE = {mae_tr:.3f}$', 
-                 transform=ax.transAxes, fontsize=8,
-                 verticalalignment='top', 
-                 bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5))
+    # ax[1,1].plot(y_test_grape, y_pred_grape, marker = 'o', linestyle = '', 
+    #              color = 'red', markersize = 1,)
+    # ax[1,1].plot(x_vector, x_vector)
+    # ax[1,1].grid()
+    # ax[1,1].set_title('Grape')
+    # ax[1,1].set_xlabel('Predicted Values')
+    # ax[1,1].set_ylabel('Real Values')
+    # ax[1,1].text(0.05, 0.95, f'$R^2$ = {r2_grape:.3f}\nRMSE = {rmse_grape:.3f}\nMAE = {mae_grape:.3f}', 
+    #              transform=ax[1,1].transAxes, fontsize=8,
+    #              verticalalignment='top', 
+    #              bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5))
+    
+    # regressor = 'Real LWC '
+    
+    # plot_title = regressor + ' Results for: ' + vi
+    
+    # fig.suptitle(plot_title)
+    # fig.tight_layout()
+    
+    # figure_name_pdf = vi + '_' + regressor + '.pdf'
+    # figure_name_png = vi + '_' + regressor + '.png'
+    
+    # figure_path_pdf = os.path.join(figure_folder, figure_name_pdf)
+    # figure_path_png = os.path.join(figure_folder, figure_name_png)
+    
+    # # fig.savefig(figure_path_pdf)
+    # # fig.savefig(figure_path_png)
+    
+    
+    # fig2, ax = plt.subplots(1,1, figsize = (4.31,2.3))
+    # ax.plot(y_train, y_pred_tr, marker = 'o', linestyle = '', 
+    #              color='red', markersize = 1,)
+    # plot_title = regressor + ' Results for: ' + vi + ' (Training) '
+    # ax.plot(x_vector, x_vector)
+    # ax.grid()
+    # ax.set_title(plot_title)
+    # ax.set_xlabel('Predicted Values')
+    # ax.set_ylabel('Real Values')
+    # ax.text(0.05, 0.95, f'$R^2$ = {r2_tr:.3f}\nRMSE = {rmse_tr:.3f}\nMAE = {mae_tr:.3f}$', 
+    #              transform=ax.transAxes, fontsize=8,
+    #              verticalalignment='top', 
+    #              bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5))
     
     
    
-    figure_name_pdf = vi + '_' + regressor + '_training.pdf'
-    figure_name_png = vi + '_' + regressor + '_training.png'
+    # figure_name_pdf = vi + '_' + regressor + '_training.pdf'
+    # figure_name_png = vi + '_' + regressor + '_training.png'
     
-    figure_path_pdf = os.path.join(figure_folder, figure_name_pdf)
-    figure_path_png = os.path.join(figure_folder, figure_name_png)
+    # figure_path_pdf = os.path.join(figure_folder, figure_name_pdf)
+    # figure_path_png = os.path.join(figure_folder, figure_name_png)
     
-    fig2.savefig(figure_path_pdf)
-    fig2.savefig(figure_path_png)
-    
-    
-    fig3, ax = plt.subplots(1,1,figsize=(4.31,2.34))
-    plot_title = regressor + ' Results for: ' + vi 
-    ax.plot(y_test, y_pred, marker = 'o', linestyle = '', 
-                 color = 'red', markersize = 3,)
-    ax.plot(x_vector, x_vector)
-    ax.grid()
-    ax.set_title(plot_title)
-    ax.set_xlabel('Predicted Values')
-    ax.set_ylabel('Real Values')
-    ax.text(0.05, 0.95, f'$R^2$ = {r2:.3f}\nRMSE = {rmse:.3f}\nMAE = {mae:.3f}', 
-                 transform=ax.transAxes, fontsize=8,
-                 verticalalignment='top', 
-                 bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5))
-    
-    new_folder_path = os.path.join(figure_folder,'Full_data')
-    
-    if not os.path.isdir(new_folder_path):
-        os.mkdir(new_folder_path)
+    # fig2.savefig(figure_path_pdf)
+    # fig2.savefig(figure_path_png)
     
     
-    name_figure_pdf = vi + '_' + regressor + '_full_data.pdf'
-    name_figure_png = vi + '_' + regressor + '_full_data.png'
+    # fig3, ax = plt.subplots(1,1,figsize=(4.31,2.34))
+    # plot_title = regressor + ' Results for: ' + vi 
+    # ax.plot(y_test, y_pred, marker = 'o', linestyle = '', 
+    #              color = 'red', markersize = 3,)
+    # ax.plot(x_vector, x_vector)
+    # ax.grid()
+    # ax.set_title(plot_title)
+    # ax.set_xlabel('Predicted Values')
+    # ax.set_ylabel('Real Values')
+    # ax.text(0.05, 0.95, f'$R^2$ = {r2:.3f}\nRMSE = {rmse:.3f}\nMAE = {mae:.3f}', 
+    #              transform=ax.transAxes, fontsize=8,
+    #              verticalalignment='top', 
+    #              bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5))
+    
+    # new_folder_path = os.path.join(figure_folder,'Full_data')
+    
+    # if not os.path.isdir(new_folder_path):
+    #     os.mkdir(new_folder_path)
     
     
-    figure_path_pdf = os.path.join(new_folder_path, name_figure_pdf)
-    figure_path_png = os.path.join(new_folder_path, name_figure_png)
+    # name_figure_pdf = vi + '_' + regressor + '_full_data.pdf'
+    # name_figure_png = vi + '_' + regressor + '_full_data.png'
     
-    fig3.tight_layout()
-    fig3.savefig(figure_path_pdf)
-    fig3.savefig(figure_path_png)
     
-    plt.close()
+    # figure_path_pdf = os.path.join(new_folder_path, name_figure_pdf)
+    # figure_path_png = os.path.join(new_folder_path, name_figure_png)
+    
+    # fig3.tight_layout()
+    # fig3.savefig(figure_path_pdf)
+    # fig3.savefig(figure_path_png)
+    
+    # plt.close()
     
     
 metrics = {'model': list_models,
            'mae': list_mae,
+           'mae_std': list_mae_std,
            'rmse': list_rmse,
            'r2': list_r2,
            'mae_avo': list_mae_avo,
@@ -377,6 +393,6 @@ metrics = {'model': list_models,
         }
 
 metrics_pd = pd.DataFrame(metrics)
-metrics_pd.to_csv('Metrics/real_lwc.csv')
+metrics_pd.to_csv(metrics_path)
 
 

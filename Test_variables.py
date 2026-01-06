@@ -63,15 +63,19 @@ mean_features = [feature + '_mean' for feature in vi_features]
 med_features = [feature + '_med' for feature in vi_features]
 mode_features = [feature +'_mode' for feature in vi_features]
 
-features = [*mean_features, *med_features, *mode_features]
+features_vis = [*mean_features, *med_features, *mode_features]
 
-features = [*mean_features, *med_features, *mode_features,
-            *blue_textures, *red_textures, *green_textures,
-            *re_textures, *nir_textures]
+features_vis_texture = [*mean_features, *med_features, *mode_features,
+                        *blue_textures, *red_textures, *green_textures,
+                        *re_textures, *nir_textures]
 
-features = ['FMC_d',*mean_features, *med_features, *mode_features,
-            *blue_textures, *red_textures, *green_textures,
-            *re_textures, *nir_textures]
+features_vis_texture_lwc = ['FMC_d',*mean_features, *med_features, *mode_features,
+                            *blue_textures, *red_textures, *green_textures,
+                            *re_textures, *nir_textures]
+
+features = features_vis
+
+
 
 train = pd.read_csv('Data/train_total.csv')
 test = pd.read_csv('Data/test_total.csv')
@@ -79,7 +83,7 @@ test = pd.read_csv('Data/test_total.csv')
 x_train = train.loc[:, features]
 x_test = train.loc[:, features]
 
-models_folder = 'Models/vis_texture_fmc/_195'
+models_folder = 'Models/vis/_20'
 
 models = os.listdir(models_folder)
 
@@ -174,18 +178,65 @@ counts2_sorted = counts2df.sort_values(by='Count', ascending=False)
 
 Features = [feature.upper().replace('_',' ') for feature in counts2_sorted['Feature']]
 
+try:
+    index_to_replace = Features.index('FMC D')
+    Features[index_to_replace] = 'LWC'
+    
+except ValueError:
+    print("There is no FMC")
+    
+try:
+    index_to_replace = Features.index('OTHER')
+    Features[index_to_replace] = 'OTHER*'
+    
+except ValueError:
+    print("There is no FMC")
+
 fig, ax = plt.subplots(1,1,figsize=(4.4,3))
 ax.bar(Features, counts2_sorted['Count'])
-ax.set_title('Most used Features using VIs and Texture')
+ax.set_title('Most used features using VIs')
 ax.tick_params(axis = 'x', rotation = 90)
 ax.grid(linestyle='--', alpha = 0.7)
 fig.tight_layout()
-fig.savefig('Paper/Figures/features_vis_texture_fmc.pdf')
+fig.savefig('Paper/Figures/features_vis.pdf')
 
 
 #%%
 
+
 print(counts2)
+
+counts3 = { 'MEAN RE': 19,
+           'CORRELATION RE': 18,
+           'STD RE': 18,
+           'VARIANCE RE': 17,
+           'MEAN G': 13,
+           'CONTRAST B': 6,
+           'CORRELATION NIR': 6,
+           'CORRELATION G': 5,
+           'CORRELATION R': 5,
+           'DISSIMILARITY R': 4,
+           'DISSIMILARITY B': 4,
+           'CONTRAST R': 3,
+           'MEAN R': 2,
+           'ENTROPY RE': 2,
+           'ENTROPY R': 2,
+           'ENTROPY NIR': 1,
+            }
+
+counts3df = pd.DataFrame(list(counts3.items()), columns=['Feature', 'Count'])
+counts3_sorted = counts3df.sort_values(by='Count', ascending=False)
+
+Features = [feature.upper().replace('_',' ') for feature in counts3_sorted['Feature']]
+
+fig, ax = plt.subplots(1,1,figsize=(4.4,3))
+ax.bar(Features, counts3_sorted['Count'])
+ax.set_title('Most used features using texture')
+ax.tick_params(axis = 'x', rotation = 90)
+ax.grid(linestyle='--', alpha = 0.7)
+fig.tight_layout()
+fig.savefig('Paper/Figures/features_texture.pdf')
+
 
 # scores_array = np.array(scores_list)
 

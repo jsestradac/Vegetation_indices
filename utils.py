@@ -10,6 +10,7 @@ import numpy as np
 import ast
 import cv2 as cv
 from scipy import stats
+from matplotlib import pyplot as plt
 
 
 def get_descriptors(img):
@@ -33,8 +34,8 @@ def prepare_data (data):
     #los arrays se guardan como 
     
     
-    x_data = data['Reflectance']
-    y_data = data['FMC']
+    x_data = data['spectral']
+    y_data = data['FMC_f']
 
     
     x_data = x_data.to_numpy()
@@ -113,4 +114,9 @@ def get_spectral_data(data):
     #y = y_data.to_numpy()/100.0
     return x
 
+def configure_plots():
+    plt.rcParams['font.family'] = 'serif'
+    plt.rcParams['font.serif'] = ['Times New Roman']
+    plt.rcParams['font.size'] = 8
+    return 0
 
